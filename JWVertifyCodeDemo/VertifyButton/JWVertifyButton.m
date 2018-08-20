@@ -54,6 +54,17 @@
     [self setTitle:self.normalTitle forState:UIControlStateNormal];
 }
 #pragma mark - private methods
+- (void)countdownAction {
+    self.currentTime--;
+    self.enabled = self.currentTime == 0;
+    if (self.currentTime > 0) {
+        [self setTitle:[NSString stringWithFormat:self.countdownTitle, self.currentTime] forState:UIControlStateDisabled];
+    } else {
+        [self setTitle:self.normalTitle forState:UIControlStateNormal];
+        [self stopCount];
+    }
+    [self setNeedsLayout];
+}
 
 - (void)stopCount {
     [self.timer invalidate];
@@ -63,21 +74,29 @@
 #pragma mark - public method
 - (void)startCountdown {
     //NSTimer
-    __weak typeof(self) weakSelf = self;
-    self.timer = [NSTimer timerWithTimeInterval:1.0 repeats:YES block:^(NSTimer * _Nonnull timer) {
-        
-        weakSelf.enabled = weakSelf.currentTime == 0;
-        if (weakSelf.currentTime > 0) {
-            
-            NSString *showInfo = [NSString stringWithFormat:weakSelf.countdownTitle,  weakSelf.currentTime];
-            [weakSelf setTitle:showInfo forState:UIControlStateDisabled];
-            weakSelf.currentTime--;
-        } else {
-            [weakSelf setTitle:weakSelf.normalTitle forState:UIControlStateNormal];
-            [weakSelf stopCount];
-        }
-        [self setNeedsDisplay];
-    }];
+    
+    //ios10 以后使用
+//    __weak typeof(self) weakSelf = self;
+//    if (@available(iOS 10.0, *)) {
+//        self.timer = [NSTimer timerWithTimeInterval:1.0 repeats:YES block:^(NSTimer * _Nonnull timer) {
+//
+//            weakSelf.enabled = weakSelf.currentTime == 0;
+//            if (weakSelf.currentTime > 0) {
+//
+//                NSString *showInfo = [NSString stringWithFormat:weakSelf.countdownTitle,  weakSelf.currentTime];
+//                [weakSelf setTitle:showInfo forState:UIControlStateDisabled];
+//                weakSelf.currentTime--;
+//            } else {
+//                [weakSelf setTitle:weakSelf.normalTitle forState:UIControlStateNormal];
+//                [weakSelf stopCount];
+//            }
+//            [self setNeedsDisplay];
+//        }];
+//    } else {
+//        // Fallback on earlier versions
+//    }
+    
+    self.timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(countdownAction) userInfo:nil repeats:YES];
     [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
     [self.timer fire];
 }
